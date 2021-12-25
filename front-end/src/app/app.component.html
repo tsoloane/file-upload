@@ -366,12 +366,12 @@
   <form [formGroup]="filesForm" >
     <div style="display: grid; grid-template-columns: auto auto; padding-left: 5px;">
       <label for="file1">File 1</label>
-      <input id="file1" type="file" formControlName="file1" [(ngModel)]="file1" (change)="fileChanged($event, file1)">
+      <input id="file1" type="file" formControlName="file1" [(ngModel)]="file1" (change)="file1Changed($event)">
       <div style="grid-column: 1 / span 2; color: red; font-size: smaller" *ngIf="filesForm.controls['file1'].errors">
          File 1 is Required
       </div>
       <label for="file2">File 2</label>
-      <input id="file2" type="file" formControlName="file2" [(ngModel)]="file2" (change)="fileChanged($event, file2)">
+      <input id="file2" type="file" formControlName="file2" [(ngModel)]="file2" (change)="file2Changed($event)">
       <div style="grid-column: 1 / span 2; color: red; font-size: smaller" *ngIf="filesForm.controls['file2'].errors">
         File 2 is Required
       </div>
@@ -384,12 +384,16 @@
       <input id="download" type="checkbox" [(ngModel)]="download" formControlName="download">
       <label for="collationPolicy">Collation Policy</label>
       <select [(ngModel)]="collationPolicy" id="collationPolicy" formControlName="collationPolicy">
-        <option>FULL</option>
-        <option>NORMAL</option>
+        <option value="FULL">FULL</option>
+        <option value="NORMAL">NORMAL</option>
       </select>
     </div>
     <div>
       <button id="processFiles" (click)="process()">Process Files</button>
+    </div>
+    <br>
+    <div>
+      <textarea [value]="result" readonly="readonly"></textarea>
     </div>
   </form>
 </div>

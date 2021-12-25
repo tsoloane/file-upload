@@ -1,24 +1,19 @@
 import {Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
 
-const enum OutgoingMessageType {
-  FILE1             = "FILE_1",
-  FILE2             = "FILE_2",
-  PROCESS_VARS      = "PROCESS_VARS",
-  EXECUTE_PROCESS   = "EXECUTE_PROCESS"
-}
-
-const enum IncomingMessageType {
-  FILE1_SIZE          = "FILE1_SIZE",
-  FILE2_SIZE          = "FILE2_SIZE",
-  PROCESS_RESULT      = "PROCESS_RESULT"
+type SocketMessage = {
+  file1: string,
+  file2: string,
+  rowCount: number,
+  collationPolicy: string
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class WebSocketService {
+export class WebSocketService extends EventTarget {
   ws!: WebSocket
+  private processed: Event = new Event('processed');
 
   connect() {
     this.ws = new WebSocket(environment.webSocketUrl);
@@ -30,30 +25,30 @@ export class WebSocketService {
   }
 
   send(file1: string, file2: string, rows: number, policy: string) {
-    alert("sending files, ws="+this.ws)
-    alert("file1:\n"+file1)
-    alert("file2:\n"+file2)
-    if(!this.ws) this.connect();  //Connect if unconnected.
+    if (!this.ws) this.connect();  //Connect if unconnected.
     let message = {
       file1: file1,
       file2: file2,
       rowCount: rows,
-      collationPolicy:  policy
+      collationPolicy: policy
     }
     this.ws.send(JSON.stringify(message))
   }
 
   //File processing completed - result from processing included.
   onFilesProcessed(event: MessageEvent) {
+    let csv = event.data
+    console.log("result from websocket\n"+csv)
+    dispatchEvent(new CustomEvent("processed", {detail: csv}))
   }
 
   //Websocket event Listeners
   onOpen(event: Event) {
-    console.log("Websocket is open")
+    console.log("Websocket is open, ready to receive")
   }
 
   onError(event: Event) {
-    console.log("Websocket Error:  "+ event.target+" !!!")
+    console.log("Websocket Error:  " + JSON.stringify(event.target) + " !!!")
   }
 
   onClose(event: Event) {

@@ -11,11 +11,14 @@ import {FileChangeEvent} from "@angular/compiler-cli/src/perform_watch";
 export class AppComponent implements OnInit {
   title = 'Process CSV Files';
   filesForm!: FormGroup;
-  file1!: string;
-  file2!: string;
-  rows!: number;
+  file1!: File;
+  file1Contents!: string
+  file2!: File;
+  file2Contents!:string
+  rows: number=5;
   download: boolean = true;
-  collationPolicy: string = "full";
+  collationPolicy: string = "FULL";
+  result!: string;
 
   constructor(private socketService: WebSocketService, private fb: FormBuilder) {
   }
@@ -24,38 +27,51 @@ export class AppComponent implements OnInit {
     this.filesForm = this.fb.group({
       file1: ['', Validators.required],
       file2: ['', Validators.required],
-      rows: ['', [Validators.min(5), Validators.max(500)]],
+      rows: ['', [Validators.required, Validators.min(5), Validators.max(500)]],
       download: [''],
       collationPolicy: ['']
     });
+    this.socketService.addEventListener("processed",(e)=>{
+      this.result=(<CustomEvent>e).detail
+      console.log("result updated to.\n"+this.result)
+    })
+    this.socketService.connect()
   }
 
-  //Read the file
   // @ts-ignore
-  fileChanged(evt, content: string): void {
-    new Promise<string>(resolve => {
-      if (evt.target && evt.target.files[0]) {
-        let file = evt.target.files[0];
-        if (file) {
-          let fr = new FileReader();
-          fr.onload = (e)=> {
-            let txt = fr.result;
-            if(txt) {
-              resolve(txt.toString())
-            } else {
-              resolve('')
-            }
-          }
-          fr.readAsText(file);
-        } else {
-          resolve('')
-        }
+  file1Changed(evt): void {
+    console.log("File1 uploaded")
+    if (evt.target && evt.target.files[0]) {
+      let file = evt.target.files[0];
+      let reader = new FileReader();
+      reader.onload = (e)=>{
+        this.file1Contents =reader.result as string
       }
-      }).then(x =>content=x)
-    }
-
-    process():void {
-    alert("Processing files...")
-      this.socketService.send(this.file1, this.file2, this.rows, this.collationPolicy);
+      reader.onloadend = (e) => {
+        console.log("File Load complete")
+      }
+      reader.readAsText(file)
     }
   }
+
+  // @ts-ignore
+  file2Changed(evt): void {
+    console.log("File2 uploaded")
+    if (evt.target && evt.target.files[0]) {
+      let file = evt.target.files[0];
+      let reader = new FileReader();
+      reader.onload = (e)=>{
+        this.file2Contents =reader.result as string
+      }
+      reader.onloadend = (e) => {
+        console.log("File Load complete")
+      }
+      reader.readAsText(file)
+    }
+  }
+
+  process(): void {
+    alert("Processing files...")
+    this.socketService.send(this.file1Contents, this.file2Contents, this.rows, this.collationPolicy);
+  }
+}

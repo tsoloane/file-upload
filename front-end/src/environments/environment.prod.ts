@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  webSocketUrl: 'http://localhost:8080'
+  webSocketUrl: 'ws://localhost:8080/processFiles'
 };

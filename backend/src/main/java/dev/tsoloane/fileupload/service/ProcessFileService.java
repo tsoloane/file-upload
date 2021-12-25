@@ -21,27 +21,29 @@ public class ProcessFileService {
 
     public List<String> file1(String content) {
         List<String> col1;
-            col1 = Arrays.stream(content.split("\n"))
-                    .map(line -> Optional.ofNullable(line.split(",", 2)[0]).orElse(""))
-                    .collect(Collectors.toList());
-
+        col1 = Arrays.stream(content.split("\n"))
+                .map(line -> Optional.ofNullable(line.split(",", 2)[0]).orElse(""))
+                .collect(Collectors.toList());
+        log.info("list one size: {}", col1.size());
         return col1;
     }
 
     public List<String> file2(String content) {
         List<String> result;
-           result = Arrays.stream(content.split("\n"))
-                    .map(line -> Optional.ofNullable(line.split(",", 2)[0]).orElse(""))
-                    .collect(Collectors.toList());
-            Collections.reverse(result);
+        result = Arrays.stream(content.split("\n"))
+                .map(line -> Optional.ofNullable(line.split(",", 2)[0]).orElse(""))
+                .collect(Collectors.toList());
+        Collections.reverse(result);
+        log.info("list two size: {}", result.size());
         return result;
     }
 
-    public List<String> collate( List<String> list1, List<String> list2, int rowCount, CollationPolicy policy) {
+    public List<String> collate(List<String> list1, List<String> list2, int rowCount, CollationPolicy policy) {
         if (policy == CollationPolicy.NORMAL) {
             rowCount = Math.min(list1.size(), list2.size());
         }
-        return IntStream.rangeClosed(0, rowCount).mapToObj(i -> {
+        log.info("rowCount: {}", rowCount);
+        List<String> csv=  IntStream.range(0, rowCount).mapToObj(i -> {
             StringBuilder rowBuilder = new StringBuilder();
             if (list1.size() > i) {
                 rowBuilder.append(list1.get(i));
@@ -49,7 +51,10 @@ public class ProcessFileService {
             if (list2.size() > i) {
                 rowBuilder.append(",").append(list2.get(i));
             }
+            System.out.printf("row: [%s]\n", rowBuilder.toString());
             return rowBuilder.toString();
         }).collect(Collectors.toList());
+        log.info("CSV lines: {}", csv.size());
+        return csv;
     }
 }

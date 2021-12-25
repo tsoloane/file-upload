@@ -35,25 +35,30 @@ public class UploadHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
-        Flux<WebSocketMessage> result = session.receive()
-                .map(msg-> {
+        log.info("Upload handler processing message");
+        Flux<WebSocketMessage> result = session.receive();
+        Flux<WebSocketMessage> processed = result.map(msg-> {
                     String jsonStr = msg.getPayloadAsText();
-                    //Use Jackson to unMarshall
+                    log.info("Got Message, ready to process");
                     try {
                         UploadMessage request = objectMapper.readValue(jsonStr, UploadMessage.class);
                          List<String> list1 = processFileService.file1(request.getFile1());  //Check Spring-boot Base64Util
                          List<String> list2 = processFileService.file2(request.getFile2());  //Decode Base 64.
-                         return processFileService.collate(list1, list2, request.getRowCount(), request.getCollationPolicy());
+                         List<String> csvLines =processFileService.collate(list1, list2, request.getRowCount(), request.getCollationPolicy());
+                         log.info("CSV lines: \n{}", String.join("\n", csvLines));
+                         log.info("Number of lines in CSV: {}", csvLines.size());
+                         return csvLines;
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                         log.error("Unable to unmarshall message from client");
                     }
-                    return Collections.unmodifiableList(new ArrayList<List<String>>());
+                    return Collections.unmodifiableList(new ArrayList<String>());
                 }).map(t-> {
                     String csv = t.stream().map(Object::toString).collect(Collectors.joining("\n"));
                     return session.textMessage(csv);
                 });
-        return session.send(result);
+        log.info("Message processed.  Sending result: \n{}\n", result);
+        return session.send(processed);
     }
 
     enum MessageType {
