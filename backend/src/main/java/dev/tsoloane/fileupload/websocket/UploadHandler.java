@@ -35,18 +35,18 @@ public class UploadHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
-        log.info("Upload handler processing message");
+        log.debug("Upload handler processing message");
         Flux<WebSocketMessage> result = session.receive();
         Flux<WebSocketMessage> processed = result.map(msg-> {
                     String jsonStr = msg.getPayloadAsText();
-                    log.info("Got Message, ready to process");
+                    log.debug("Got Message, ready to process");
                     try {
                         UploadMessage request = objectMapper.readValue(jsonStr, UploadMessage.class);
                          List<String> list1 = processFileService.file1(request.getFile1());  //Check Spring-boot Base64Util
                          List<String> list2 = processFileService.file2(request.getFile2());  //Decode Base 64.
                          List<String> csvLines =processFileService.collate(list1, list2, request.getRowCount(), request.getCollationPolicy());
-                         log.info("CSV lines: \n{}", String.join("\n", csvLines));
-                         log.info("Number of lines in CSV: {}", csvLines.size());
+                         log.debug("CSV lines: \n{}", String.join("\n", csvLines));
+                         log.debug("Number of lines in CSV: {}", csvLines.size());
                          return csvLines;
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
@@ -57,7 +57,7 @@ public class UploadHandler implements WebSocketHandler {
                     String csv = t.stream().map(Object::toString).collect(Collectors.joining("\n"));
                     return session.textMessage(csv);
                 });
-        log.info("Message processed.  Sending result: \n{}\n", result);
+        log.debug("Message processed.  Sending result: \n{}\n", result);
         return session.send(processed);
     }
 

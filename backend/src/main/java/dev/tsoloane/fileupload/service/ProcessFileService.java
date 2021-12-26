@@ -24,7 +24,7 @@ public class ProcessFileService {
         col1 = Arrays.stream(content.split("\n"))
                 .map(line -> Optional.ofNullable(line.split(",", 2)[0]).orElse(""))
                 .collect(Collectors.toList());
-        log.info("list one size: {}", col1.size());
+        log.debug("list one size: {}", col1.size());
         return col1;
     }
 
@@ -34,7 +34,7 @@ public class ProcessFileService {
                 .map(line -> Optional.ofNullable(line.split(",", 2)[0]).orElse(""))
                 .collect(Collectors.toList());
         Collections.reverse(result);
-        log.info("list two size: {}", result.size());
+        log.debug("list two size: {}", result.size());
         return result;
     }
 
@@ -42,7 +42,7 @@ public class ProcessFileService {
         if (policy == CollationPolicy.NORMAL) {
             rowCount = Math.min(list1.size(), list2.size());
         }
-        log.info("rowCount: {}", rowCount);
+        log.debug("rowCount: {}", rowCount);
         List<String> csv=  IntStream.range(0, rowCount).mapToObj(i -> {
             StringBuilder rowBuilder = new StringBuilder();
             if (list1.size() > i) {
@@ -54,7 +54,7 @@ public class ProcessFileService {
             System.out.printf("row: [%s]\n", rowBuilder.toString());
             return rowBuilder.toString();
         }).collect(Collectors.toList());
-        log.info("CSV lines: {}", csv.size());
+        log.debug("CSV lines: {}", csv.size());
         return csv;
     }
 }

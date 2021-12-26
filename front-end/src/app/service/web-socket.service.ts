@@ -20,19 +20,24 @@ export class WebSocketService extends EventTarget {
     this.ws.addEventListener('open', this.onOpen)
     this.ws.addEventListener('close', this.onClose)
     this.ws.addEventListener('error', this.onError)
-    this.ws.addEventListener('message', this.onFilesProcessed)
     this.ws.binaryType = "blob"
   }
 
-  send(file1: string, file2: string, rows: number, policy: string) {
+  send(file1: string, file2: string, rows: number, policy: string) : Promise<string> {
     if (!this.ws) this.connect();  //Connect if unconnected.
-    let message = {
-      file1: file1,
-      file2: file2,
-      rowCount: rows,
-      collationPolicy: policy
-    }
-    this.ws.send(JSON.stringify(message))
+    return new Promise<string>((resolve, reject) => {
+      let message = {
+        file1: file1,
+        file2: file2,
+        rowCount: rows,
+        collationPolicy: policy
+      }
+      this.ws.send(JSON.stringify(message))
+      this.ws.onmessage = (ev => {
+        let csv=ev.data
+        resolve(csv)
+      })
+    })
   }
 
   //File processing completed - result from processing included.

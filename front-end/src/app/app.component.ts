@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {WebSocketService} from "./service/web-socket.service";
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {FileChangeEvent} from "@angular/compiler-cli/src/perform_watch";
+import {saveAs} from "file-saver";
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,7 @@ export class AppComponent implements OnInit {
   rows: number=5;
   download: boolean = true;
   collationPolicy: string = "FULL";
-  result!: string;
+  result: string = "";
 
   constructor(private socketService: WebSocketService, private fb: FormBuilder) {
   }
@@ -71,7 +72,17 @@ export class AppComponent implements OnInit {
   }
 
   process(): void {
-    alert("Processing files...")
-    this.socketService.send(this.file1Contents, this.file2Contents, this.rows, this.collationPolicy);
+    console.log("Processing files...")
+    this.socketService.send(this.file1Contents, this.file2Contents, this.rows, this.collationPolicy)
+      .then(data=> {
+        if(this.download) {
+          const blob = new Blob([data])
+          saveAs(blob, "processed_file.csv")
+        }
+        else {
+            this.result = data
+          }
+        }
+      );
   }
 }
