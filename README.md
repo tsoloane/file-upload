@@ -17,4 +17,4 @@ The above command will create the Docker Containers for the front end (Angular) 
 ```
 
 
-Point your browser to [http://localhost:80] to  test
+Point your browser to http://localhost:80 to test
